@@ -30,8 +30,8 @@ function App() {
 
   return (
     <div>
-      <img src="/jet.jpg" className="jet-left" />
-      <img src="/jet.jpg" className="jet-right" />
+      <img src={`${process.env.PUBLIC_URL}/jet.jpg`} alt="fighter jet" className="jet-left" />
+   <img src={`${process.env.PUBLIC_URL}/jet.jpg`} alt="fighter jet" className="jet-right" />
       <div className="container">
         <h1>Aircraft Parts Tracker</h1>
 
