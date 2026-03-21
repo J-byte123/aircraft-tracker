@@ -119,3 +119,7 @@ button:hover {
     right: 20px;
     transform: scaleX(-1);
 }
+
+.search-bar {
+    margin-bottom: 20px;
+}

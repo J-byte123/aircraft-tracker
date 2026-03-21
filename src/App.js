@@ -3,19 +3,30 @@ import "./App.css";
 
 function App() {
   const [parts, setParts] = useState([]);
+  const [history, setHistory] = useState([]);
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
   const [status, setStatus] = useState("Available");
   const [engine, setEngine] = useState("F135");
   const [view, setView] = useState("engines");
+  const [search, setSearch] = useState("");
 
   const engines = ["F135", "F119", "F117"];
 
   function addPart() {
     if (!name || !number) return;
 
-    const newPart = { name, number, status, engine };
+    const newPart = {
+      id: Date.now(),
+      name,
+      number,
+      status,
+      engine,
+      deleted: false,
+    };
+
     setParts([...parts, newPart]);
+    setHistory([...history, newPart]);
 
     setName("");
     setNumber("");
@@ -23,23 +34,37 @@ function App() {
     setEngine("F135");
   }
 
-  function deletePart(index) {
-    const updated = parts.filter((_, i) => i !== index);
-    setParts(updated);
+  function deletePart(id) {
+    const updatedParts = parts.filter((part) => part.id !== id);
+    setParts(updatedParts);
+
+    const updatedHistory = history.map((part) =>
+      part.id === id ? { ...part, deleted: true } : part
+    );
+    setHistory(updatedHistory);
   }
+
+  const filteredParts = parts.filter((part) => {
+    const searchText = search.toLowerCase();
+    return (
+      part.name.toLowerCase().includes(searchText) ||
+      part.number.toLowerCase().includes(searchText)
+    );
+  });
+
+  const filteredHistory = history.filter((part) => {
+    const searchText = search.toLowerCase();
+    return (
+      part.name.toLowerCase().includes(searchText) ||
+      part.number.toLowerCase().includes(searchText)
+    );
+  });
 
   return (
     <div>
-      <img
-        src={`${process.env.PUBLIC_URL}/jet.jpg`}
-        alt="fighter jet left"
-        className="jet-left"
-      />
-      <img
-        src={`${process.env.PUBLIC_URL}/jet.jpg`}
-        alt="fighter jet right"
-        className="jet-right"
-      />
+      <img src="/jet.jpg" alt="fighter jet left" className="jet-left" />
+      <img src="/jet.jpg" alt="fighter jet right" className="jet-right" />
+
       <div className="container">
         <h1>Aircraft Parts Tracker</h1>
 
@@ -79,7 +104,16 @@ function App() {
               <option key={eng}>{eng}</option>
             ))}
           </select>
+
           <button onClick={addPart}>Add Part</button>
+        </div>
+
+        <div className="search-bar">
+          <input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search by part name or number"
+          />
         </div>
 
         {view === "engines" && (
@@ -87,12 +121,13 @@ function App() {
             {engines.map((eng) => (
               <div key={eng} className="engine-section">
                 <h2>{eng}</h2>
-                {parts
-                  .filter((p) => p.engine === eng)
-                  .map((p, i) => (
-                    <div key={i} className="part">
-                      {p.name} ({p.number}) - {p.status}
-                      <button onClick={() => deletePart(i)}>Delete</button>
+
+                {filteredParts
+                  .filter((part) => part.engine === eng)
+                  .map((part) => (
+                    <div key={part.id} className="part">
+                      {part.name} ({part.number}) - {part.status}
+                      <button onClick={() => deletePart(part.id)}>Delete</button>
                     </div>
                   ))}
               </div>
@@ -103,9 +138,16 @@ function App() {
         {view === "history" && (
           <div className="history">
             <h2>History</h2>
-            {parts.map((p, i) => (
-              <div key={i} className="part">
-                {p.name} ({p.number}) - {p.status} [{p.engine}]
+
+            {filteredHistory.map((part) => (
+              <div key={part.id} className="part">
+                {part.name} ({part.number}) - {part.engine}
+                {search && (
+                  <span style={{ color: part.deleted ? "red" : "limegreen" }}>
+                    {" "}
+                    - {part.deleted ? "Deleted" : "Active"}
+                  </span>
+                )}
               </div>
             ))}
           </div>
